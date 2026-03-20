@@ -33,14 +33,27 @@ The data was segmented into epochs from -4.5 to 4.5 s relative to the event onse
 **Fig. 3**: Continous EEG at electrode PO3 and event markers (red: segment, black: doors, blue: corners). High amplitude artefacts occurred for the onsets of new segments, and for the event 'doors'.
 
  
- For addressing the artefact at electrode AFz, an infomax ICA was computed with the EEG data filtered between 1 and 15 Hz (Fig. 3). Independet component 7 shows a clear eye blink topography and waveform that matched with the EEG waveform at AFz. 
+ For addressing the *eye blink artefact* at electrode AFz, an infomax ICA was computed with the EEG data filtered between 1 and 15 Hz (Fig. 3). One independet component showed a clear eye blink topography and waveform that matched with the EEG waveform at AFz. This component was removed from the data.
 
-![ic](./md_images/ica.png)
-**Fig. 2**: A typical EEG epoch with artefact.
+Trials with *movement artifacts* like that depicted in Fig. 2 (~ 1s) would be removed from the data in a conventional pre-processing routine. However, since we have only a limited number of trials, we can possibly not afford to remove whole trials. Instead the movement artefacts were addressed with the following three approaches:
+- **Denoising Source Separation (DSS)**. This is a blind source separation technique that, like the ICA,  unmixes a signal into components. DSS, however, can identify signal components that are time-locked to user-defined events. For our data, peak artifact time points +- 0.5 s were used as events. DSS identified two components whose topography and waveform matched the artifacts at electrodes PO3 and PO4. These were removed from the data. The outcome is shown in Figures 4 (all electrodes) and 5 (electrodes AFz and PO3, overlay pre /post cleaning).
 
-[//]: # (Because there were only a few trials and
- electrodes, conventional artifact removal routines that target full epochs and ICA components were not applicable. An automatic artefact removal algorithm was used instead, ATAR, Bajaj et al. 2020. Visual inspection showed 
- frequent but short-lasting artifacts specifically at electrodes PO3 and PO4. These were removed after applying ATAR.)
+![Artifact_removed](./md_images/post_icanddss.png)
+**Fig. 4**: Typical EEG epoch after artifact correction with ICA and DSS. Compare with the uncleaned data depicted in Fig. 2. 
+
+![Artifact_removed_2chan](./md_images/icadss_AFzPO3.png)
+**Fig. 5**: Overlay of EEG waveforms shown in Figs. 2 and 4 for electrodes with the strongest movement artefacts. 
+
+- **Automatic and Tunable Artifact Removal (ATAR)**. This is an algorithm for artifact removal that relies on wavelet package decomposition. Wavelet coefficients with a high variance are considered artifacts and the corresponding frequency components are attentuated. Different from ICA and DSS, which require multiple trials with artifacts for learning, ATAR works with single trials and also  with single channels. The method can therefore be used for artifact correction in an ongoing EEG, which makes it interesting for BCI applictions. ATAR was applied with the method 'soft thresholding' and the aggressiveness parameter beta was set to 1. Results are depicted in Figs. 6 and 7.
+![ATAR_Trial4](./md_images/Atar_trial4.png)
+**Fig. 6**: Typical EEG epoch after artifact correction with ICA and ATAR. Compare with the uncleaned data depicted in Fig. 2, and DSS-cleaned data in Fig. 4. 
+
+![ATAR_AFzPO4](./md_images/ATAR_AFzPO3.png)
+**Fig. 7**: Overlay of EEG waveforms shown in Figs. 2 and 6 for electrodes with the strongest movement artefacts. 
+
+- **Partial rejection**. Finally, a data set was constructed where time points with movement artefacts were overwritten with NaN values.
+
+Overall, ICA + DSS showed the best performance for reducing eye blink and movement artefacts. ATAR worked well for eye blink artifacts and the movement artefact at PO3, but produced an artefact at frontal electrodes during signal recnstruction. Further tuning of the ATAR parameters might lead to better outcomes, if this should be of interest. Partial rejection is the most conservative method where the artifact but other signal components are removed. Some analyses might be not be working with NaNs in time series.
 
 
 [//]: # (This is a comment)

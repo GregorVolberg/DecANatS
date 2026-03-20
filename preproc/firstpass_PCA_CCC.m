@@ -59,22 +59,14 @@ scatter(door, zeros(length(door))+1, [], 'k', 'filled');
 scatter(startstop, zeros(length(startstop))+1.5, [], 'r', "filled");
 scatter(corner, zeros(length(corner))+2, [],'b', "filled");
 
+%% bad channels
+bad_channels     = [];
 
-
-
-%% manually remove elec information on VEOG and HEOG (interferes with ft_channelrepair)
-    EOG = ismember(preproc.elec.label, {'VEOG', 'HEOG'});
-    preproc.elec.label(EOG) = [];
-    preproc.elec.elecpos(EOG,:) = [];
-
-%% read bad channels
-    bad_channels     = strsplit(events.bad_channels{1}, ','); 
-
-    %% run ICA
-    cfg = [];
-    cfg.channel    = setdiff(preproc.elec.label, bad_channels);
-    cfg.randomseed = 7; % set seed for replicable results
-    ic             = ft_componentanalysis(cfg, preproc);
+%% run ICA
+cfg = [];
+cfg.channel    = setdiff(preproc.label, bad_channels);
+cfg.randomseed = 7; % set seed for replicable results
+ic             = ft_componentanalysis(cfg, preproc);
 
 layoutFile = 'EEG1010.lay';    % contained in fieldtrip template folder
 elecsFile  = 'easycapM10.mat'; % contained in fieldtrip template folder
@@ -85,6 +77,14 @@ cfg.continuous   = 'no';
 cfg.layout       = layoutFile;
 cfg.allowoverlap = 'yes';
 ft_databrowser(cfg, ic);
+
+bad_components = 5;
+
+%% reject components
+cfg = [];
+cfg.component  = bad_components;
+icCorrected    = ft_rejectcomponent(cfg, ic, preproc);
+
 %% define segments
 cfg                    = [];
 cfg.trialfun           = 'ft_trialfun_bids'; 
