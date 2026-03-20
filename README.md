@@ -45,7 +45,7 @@ Trials with *movement artifacts* like that depicted in Fig. 2 (~ 1s) would be re
 **Fig. 5**: Overlay of EEG waveforms shown in Figs. 2 and 4 for electrodes with the strongest movement artefacts. 
 
 - **Automatic and Tunable Artifact Removal (ATAR)**. This is an algorithm for artifact removal that relies on wavelet package decomposition. Wavelet coefficients with a high variance are considered artifacts and the corresponding frequency components are attentuated. Different from ICA and DSS, which require multiple trials with artifacts for learning, ATAR works with single trials and also  with single channels. The method can therefore be used for artifact correction in an ongoing EEG, which makes it interesting for BCI applictions. ATAR was applied with the method 'soft thresholding' and the aggressiveness parameter beta was set to 1. Results are depicted in Figs. 6 and 7.
-![ATAR_Trial4](./md_images/Atar_trial4.png)
+![ATAR_Trial4](./md_images/Atar_Trial4.png)
 **Fig. 6**: Typical EEG epoch after artifact correction with ICA and ATAR. Compare with the uncleaned data depicted in Fig. 2, and DSS-cleaned data in Fig. 4. 
 
 ![ATAR_AFzPO4](./md_images/ATAR_AFzPO3.png)
