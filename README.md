@@ -53,7 +53,19 @@ Trials with *movement artifacts* like that depicted in Fig. 2 (~ 1s) would be re
 
 - **Partial rejection**. Finally, a data set was constructed where time points with movement artefacts were overwritten with NaN values.
 
-Overall, ICA + DSS showed the best performance for reducing eye blink and movement artefacts. ATAR worked well for eye blink artifacts and the movement artefact at PO3, but produced an artefact at frontal electrodes during signal recnstruction. Further tuning of the ATAR parameters might lead to better outcomes, if this should be of interest. Partial rejection is the most conservative method where the artifact but other signal components are removed. Some analyses might be not be working with NaNs in time series.
+When considerung Fig. 2, one obvious feature is the very high amplitude at electrode PO3 (and, compared to the more frontal electrodes, also electrode PO4). My suspicion is that these are artifacts originating from walking.  The data depicted in Fig. 8 confirm this assumption. Sub-plots 1-3 show that waveforms recorded at posterior electrodes, but not AFz, have a spectral peak around 1.6 Hz (3.2, 4.8 Hz) that is typical for one gait cycle. Sub-plot 4 shows the band-pass filtered waveform (1-2 Hz) at both posterior electrodes. The amplitude has the same phase at left and right electrodes, and becomes smaller as the participant is near a door (t=0), likely showing that she was slowing down or stopping.
+
+![bp_hilbert](./md_images/gaitcycle.png)
+**Fig. 8**: Power spectra and Hilbert amplitude of band-pass filtered waveform (1-2 Hz) at selected electrodes. The data suggest that large amplitude artefacts at posterior electrodes originate from the gait cycle.
+
+Overall, ICA + DSS showed the best performance for reducing eye blink and movement artefacts. ATAR worked well for eye blink artifacts and the movement artefact at PO3, but produced an artefact at frontal electrodes during signal reconstruction. Further tuning of the ATAR parameters might lead to better outcomes, if this should be of interest. Partial rejection is the most conservative method where the artifact but other signal components are removed. Some analyses might be not be working with NaNs in time series. With respect to the gait cycle artifact, I suggest using only frequencies of 5 Hz and higher for the classification.
+
+After cleaning for artifacts, the data was re-referenced using the  reference electrode standardization technique (REST). The technique bases on a forward model, which was computed from on a three-layer spherical headmodel. 
+
+## To do for preprocessing (by Tuesday)
+- check spectrogram of PO electrodes. Notch filter possible? [done]
+- re-reference without bringing noise from PO electrodes into frontal electrodes (try REST) [done]
+- 
 
 
 [//]: # (This is a comment)
@@ -68,12 +80,30 @@ Overall, ICA + DSS showed the best performance for reducing eye blink and moveme
 [//]: # (Cz    REF   SRB2 REF, weiß)
 [//]: # (F4    21    BIAS GND, Schwarz)
 
-
-
-
-
-
-
-
 ## Analysis
 ### Preprocessing
+
+### Classification
+The data was decomposed into frequencies from 4 to 30 Hz, in steps of 12 ms, and baseline-corrected using post-event time bins from 3 to 3.6 s. The baseline correction transformed the data from raw power to relative change in power with respect to the baseline.
+The data was then subjected into a binary classifier using electrodes as features, and time and frequency as search dimensions (LDA, 5-fold cross validation). Results are depicted in Figure 9 and Figure 10. Notable time and frequency ranges with high accuracy occurred around 8-10 Hz, -0.5 to 0 s; and between 25 and 30 Hz throughout the pre-stimulus part of the epoch. A topography for the 8-10 Hz frequencies showed that the accuracy was maximal at electrode Cz. The frequency range and topography suggest that this is a mu rhythm which is typically observed during motor action.
+
+![door_vs_null_tfr.png](./md_images/door_vs_null_tfr.png)
+**Fig. 9**: Classification accuracy for 'doors' versus null events. The data was the change in power relative to a 3 to 3.6 s post-event baseline.
+
+![door_vs_null_topo.png](./md_images/door_vs_null_topo.png)
+**Fig. 10**: Topography for the 9 Hz pre-stimulus accuracy as seen in Fig. 9.
+
+The same analysis was used for classification of corners versus null events. The results were comparable to those reported for doors (Figs. 11 and 12). Again, the maximum accuracy was found at electrode Cz. Compared to classification of doors, accuracies were also comparably high for electrodes AFz, Fz and C3.
+
+![corner_vs_null_tfr.png](./md_images/corners_vs_null_tfr.png)
+**Fig. 11**: Same as Fig. 9, but for classification of corners vs. null events.
+
+![corner_vs_null_topo.png](./md_images/corner_vs_null_topo.png)
+**Fig. 12**: Same as Fig. 10, but for classification of corners vs. null events.
+
+Next steps:
+- pre-process continuous (rather than epoched) data, so that the classifier can be applied to moving windows along the walking path
+- try EEGnet, https://github.com/vlawhern/arl-eegmodels
+
+[//]: # (try EEGNet, Thursday)
+

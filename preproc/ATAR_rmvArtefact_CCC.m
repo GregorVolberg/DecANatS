@@ -187,16 +187,111 @@ h(3).Color = h(1).Color;
 h(4).Color = h(2).Color;
 legend({'original', 'cleaned'});
 
+%% check PO electrodes spectrogram
+% my suspicion is that the left / right PO high amlitudes are artifacts
+% from walking. The artifacts seems to be rhythmic, with a frequency in the typical gait cycle (~1.5 Hz), 
+% and the artifacts have lower amplitudes when approaching doors (i.e. when reducing speed or stopping).
+
+cfg         = [];
+cfg.method  = 'mtmfft';
+cfg.taper   = 'hanning';
+cfg.output  = 'pow';
+cfg.pad     = 'nextpow2';
+cfg.foilim  = [1 30];
+cfg.channel = {'PO3', 'PO4', 'AFz'};
+powspctrm   = ft_freqanalysis(cfg, dssCorrected);
+
+h = figure;
+set(h, 'Color', [1 1 1], 'Position', [248 589 1297 259]);
+for k = 1:3
+subplot(1,4,k);
+plot(powspctrm.freq, powspctrm.powspctrm(k,:));
+xlim([0,30]); 
+xlabel('Frequency (Hz)');
+ylabel('Power (\muV^2)');
+title(powspctrm.label(k));
+end
+
+% plot phase at trial 4
+cfg = [];
+cfg.bpfilter = 'yes';
+cfg.bpfreq = [1 2]; 
+cfg.hilbert = 'real';
+cfg.channel    = {'PO3', 'PO4'};
+bp_filt = ft_preprocessing(cfg, dssCorrected);
+
+subplot(1,4,4)
+plot(bp_filt.time{1}, bp_filt.trial{4});
+ylim([-40 40]);
+xlabel('Time (s)');
+ylabel('Hilbert amplitude (\muV)');
+title('Trial 4, band-pass 1-2 Hz');
+legend({'PO3', 'PO4'}); legend('BoxOff');
+
+exportgraphics(h, '../md_images/gaitcycle.png', 'Resolution', 300);
 
 %% re-reference
-cfg            = [];
-cfg.reref      = 'yes';
-cfg.refchannel = 'all';
-cfg.refmethod  = 'avg';
+% use REST reference:
+% https://www.fieldtriptoolbox.org/example/preproc/rereference/#:~:text=We%20recommend%20the%20median%20reference,can%20be%20computed%20using%20ft_prepare_leadfield.
+elecM1    = ft_read_sens('template/electrode/easycap-M1.txt');
+elecM1    = rmfield(elecM1, {'type', 'unit'});
+label_idx = ismember(elecM1.label, dssCorrected.label);
+electmp  = structfun(@(x) x(find(label_idx),:), elecM1, 'UniformOutput', false);
+[~, row_indx] = ismember(dssCorrected.label, electmp.label); % make elec order as in data
+elecOBCI  = structfun(@(x) x(row_indx,:), electmp, 'UniformOutput', false);
+elecOBCI.type = 'eeg1010';
+elecOBCI.unit = 'mm';
+clear electmp elecM1
+
+headmodel = []; sourcemodel = [];
+headmodel.type = 'singlesphere';
+headmodel.cond = [0.3300 1 0.0042 0.3300];  % conductivities of each sphere
+headmodel.r = [71 72 79 85];                % radius of each sphere
+headmodel.o = [0 0 0];
+headmodel.unit = 'mm';
+
+cfg = [];
+cfg.headmodel = headmodel;
+cfg.elec = elecOBCI;
+cfg.method = 'basedonvol';
+cfg.inwardshift = 20; % in mm, relative to the scalp surface which is at 85 mm radius
+sourcemodel = ft_prepare_sourcemodel(cfg);
+
+figure
+ft_plot_headmodel(headmodel);
+alpha 0.3
+ft_plot_mesh(sourcemodel);
+ft_plot_sens(elecOBCI, 'label', 'label', 'elecshape', 'disc');
+view([80, 120, 20])
+
+cfg = [];
+cfg.headmodel = headmodel;
+cfg.elec = elecOBCI;
+cfg.sourcemodel = sourcemodel;
+leadfield = ft_prepare_leadfield(cfg);
+
+cfg             = [];
+cfg.implicitref = [];
+cfg.reref       = 'yes';
+cfg.refmethod   = 'rest';
+cfg.refchannel  = 'all';
+cfg.leadfield   = leadfield;
+dss  = ft_preprocessing(cfg, dssCorrected);
+pr   = ft_preprocessing(cfg, pr_data);
 xeeg = ft_preprocessing(cfg, xeeg);
 
 %% save to BIDS derivates
-% 
-save(derivatespath, 'xeeg');
+save([derivatespath, '_atar.mat'], 'xeeg');
+save([derivatespath, '_partreject.mat'], 'pr');
+save([derivatespath, '_dss.mat'], 'dss');
 
+%% have a look
+% dat = importdata ([derivatespath, '_dss.mat']);
+% cfg              = [];
+% cfg.continuous   = 'no';
+% cfg.layout       = layoutFile;
+% cfg.allowoverlap = 'yes';
+% ft_databrowser(cfg, dat);
 
+%% need to adress the gait artifact (is introduced in all electrodes after re-referencing)
+% - try IC on bandpass-filtered data
