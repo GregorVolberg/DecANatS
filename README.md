@@ -1,5 +1,7 @@
 # **DecANatS**: Decoding Action Intentions in Natural Scenes
 
+(for neurIPS see bottom of this document)
+
 # Methods
 ## Procedure
 
@@ -84,7 +86,7 @@ After cleaning for artifacts, the data was re-referenced using the  reference el
 ### Preprocessing
 
 ### Classification
-The data was decomposed into frequencies from 4 to 30 Hz, in steps of 12 ms, and baseline-corrected using post-event time bins from 3 to 3.6 s. The baseline correction transformed the data from raw power to relative change in power with respect to the baseline.
+The data was decomposed into frequencies from 4 to 30 Hz, in steps of 12 ms, and baseline-corrected using post-event time bins from -3 to 3.6 s. The baseline correction transformed the data from raw power to relative change in power with respect to the baseline.
 The data was then subjected into a binary classifier using electrodes as features, and time and frequency as search dimensions (LDA, 5-fold cross validation). Results are depicted in Figure 9 and Figure 10. Notable time and frequency ranges with high accuracy occurred around 8-10 Hz, -0.5 to 0 s; and between 25 and 30 Hz throughout the pre-stimulus part of the epoch. A topography for the 8-10 Hz frequencies showed that the accuracy was maximal at electrode Cz. The frequency range and topography suggest that this is a mu rhythm which is typically observed during motor action.
 
 ![door_vs_null_tfr.png](./md_images/door_vs_null_tfr.png)
@@ -106,4 +108,54 @@ Next steps:
 - try EEGnet, https://github.com/vlawhern/arl-eegmodels
 
 [//]: # (try EEGNet, Thursday)
+
+# neurIPS workflow
+- *_DecANatS/scripts/preproc/convEEG2bids_neurips_2.m*: converted original data into BIDs format. The event file contains the full (sample-wise) protocol including landmarks, presence of other pedestrians etc. The folder structure is as follows:
+```
+- bids
+  - sub-01
+        - eeg
+            - sub-01_task-pedestrianNavigation_eeg.vhdr
+            - sub-01_task-pedestrianNavigation_events.tsv
+            - ...
+  - sub-02 
+          ...
+```
+
+- *_DecANatS/scripts/preproc/continuous_preproc_neurips_sub01.m*, *_sub02.m*, ...  Preprocessing script, per partipant. Based on Aurelia data script *continuous_preproc_CCC.m*. Artifact are marked, ICA and DSS are applied for artefact correction, bad channels are interpolated, and data is re-referenced to REST. Cleaned data is saved to bids/derivates/sub-01-cleaned.vhdr, sub-02-cleaned.vhdr etc. in BVA format. Artefact definitions are saved in *sub-01_task-pedestrianNavigation_artifact_def.mat* etc.
+
+- *_DecANatS/scripts/reurips_read_and_analyse.m* Preprocessing is slightly different from the procedure with Aurelias data. Data cleaning was performed on the continous data and the trial selection, and definition of conditions, was made made during the analysis. A specific trial function **_DecANatS/scripts/preproc/ft_trialfun_bids_decanats.m* was used to identify corner, door, and null event onsets. Null events were set at a random location between corners so that the null segments would not overlap with corner segments. 
+
+
+
+Observations during pre-processing
+- sub-01 clean data, clear blink and door artefacts
+- sub-02, clean data, clear door artefacts
+- sub-03 very noisy, exclude?
+- sub-04, no door artifacts
+- sub-05, no ICA and no DSS correction possible, too noisy
+- sub-06, electrode AFz broken (spherical spline - interpolated), strong low-frequency artefact, no door artifacts identifyable
+- sub-07, data OK, electrode PO4 broken and interpolated. No door artifacts
+- sub-08, electrode AFz broken (spherical spline - interpolated), no door artefacts
+- sub-09, data OK, no door artefacts, but transient high-frequency artifacts
+- sub-10, data OK, no door artefacts
+
+
+
+Analysis steps
+- A similar analysis as for Aurelias data was performed on all 10 participants. Linear discriminant analysis was used with time-frequency - resolved EEG data and channels as features. The following contrasts were performed:
+
+   - doors versus null
+   - turn left corners versus null
+   - turn right corners versus null
+   - turn left versus turn right corners
+
+ 
+![doors_vs_null_neurips.png](./md_images/door_vs_null_lda_neurips.png)
+
+![left_vs_null_neurips.png](./md_images/l_corner_vs_null_lda_neurips.png)
+
+![right_vs_null_neurips.png](./md_images/r_corner_vs_null_lda_neurips.png)
+
+![left_vs_right_neurips.png](./md_images/l_corner_vs_r_corner_lda_neurips.png)
 
