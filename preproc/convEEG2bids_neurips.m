@@ -20,7 +20,7 @@ capsize = 56 + ismember(sex, 'm')*2; % all f 56, all m 58
 %% set general import options
 
 %% new_ mini subject loop
-for n = 1:3%numel(all_subs)
+for n = 1:numel(all_subs)
     sub  = all_subs(n);
     [idx, ~, ~] = get_session_files_in_order(tbl, sub);
     eegfilename = fullfile(tbl.folder(idx), tbl.name(idx));
@@ -68,6 +68,12 @@ for n = 1:3%numel(all_subs)
      protocol.timestamp = cellstr(datetime(datetime(protocol.timestamp, 'ConvertFrom', 'posixtime'),...
                             'Format', 'yyyy-MM-dd''T''HH:mm:ss.SSS''Z'''));
      bids_events = [protocol, vertcat(tmp_events{:})]; clear tmp_events
+     % replace empty cells {0x0 char} with char 'n/a' in relevant columns
+     bids_events.label_opt_pos_abs(cellfun(@isempty, bids_events.label_opt_pos_abs)) = {'straight'};
+     bids_events.label_head_pos_abs(cellfun(@isempty, bids_events.label_head_pos_abs)) = {'straight'};
+     bids_events.label_abs_pos(cellfun(@isempty, bids_events.label_abs_pos)) = {'straight'};
+
+
 
     % BV export information: eeg data, header structure, event structure
     hdr = [];

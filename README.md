@@ -121,11 +121,19 @@ Next steps:
   - sub-02 
           ...
 ```
+- added additional corner label definitions based on optical flow and head movement with *_DecANatS/scripts/preproc/modify_events_pipeline2.m*. Old events files are renamed by adding the suffix *.old*. 
 
 - *_DecANatS/scripts/preproc/continuous_preproc_neurips_sub01.m*, *_sub02.m*, ...  Preprocessing script, per partipant. Based on Aurelia data script *continuous_preproc_CCC.m*. Artifact are marked, ICA and DSS are applied for artefact correction, bad channels are interpolated, and data is re-referenced to REST. Cleaned data is saved to bids/derivates/sub-01-cleaned.vhdr, sub-02-cleaned.vhdr etc. in BVA format. Artefact definitions are saved in *sub-01_task-pedestrianNavigation_artifact_def.mat* etc.
 
-- *_DecANatS/scripts/reurips_read_and_analyse.m* Preprocessing is slightly different from the procedure with Aurelias data. Data cleaning was performed on the continous data and the trial selection, and definition of conditions, was made made during the analysis. A specific trial function **_DecANatS/scripts/preproc/ft_trialfun_bids_decanats.m* was used to identify corner, door, and null event onsets. Null events were set at a random location between corners so that the null segments would not overlap with corner segments. 
+- *_DecANatS/scripts/reurips_read_and_analyse_xy.m* Preprocessing is slightly different from the procedure with Aurelias data. Data cleaning was performed on the continous data and the trial selection, and definition of conditions, was made made during the analysis. A specific trial function **_DecANatS/scripts/preproc/ft_trialfun_bids_decanats.m* was used to identify corner, door, and null event onsets. Null events were set at a random location between corners so that the null segments would not overlap with corner segments. 
+   - *_DecANatS/scripts/neurips_read_and_analyse_1.m* absolute position, no cleaning
+   - *_DecANatS/scripts/neurips_read_and_analyse_2.m* absolute position, cleaning
+   - *_DecANatS/scripts/neurips_read_and_analyse_3.m* optical flow, cleaning
+   - *_DecANatS/scripts/neurips_read_and_analyse_4.m* head movememnt, cleaning
 
+- *_DecANatS/scripts/make_figs.m* creates figures for decoding accuracy according to the above stripts 2 to 4.
+
+- *_DecANatS/scripts/get_theta_allsamples.m* creates an event file with an added column for theta power, per sample, for plotting along with position data. The power is baseline-corrected for the mean values across the whole segment (i. e., the whole course) an dis expressed as the change in power relative to baseline. Currently only exports data for sub-01 and sub-07 and collapses power over all channels.
 
 
 Observations during pre-processing
@@ -150,12 +158,19 @@ Analysis steps
    - turn right corners versus null
    - turn left versus turn right corners
 
- 
-![doors_vs_null_neurips.png](./md_images/door_vs_null_lda_neurips.png)
+For Neurips, corner conditions (no doors) were used and corners where either defined by the absolute position of the participant, optical flow, or head movements. Results show that classification accuracy improved if otpical flow or head movements are used for corner definition, compared to position. The t maps in the right column reflect results of one-sample t-tests on the classification accuracy per time and frequency bin (mu = 0.5, df = 9, two-sided, uncorrected). Non-significant time and frequency bins are masked out. The scaling corresponds to p-values from 0.05 (t = 2.26) to 0.001  (t = 4.78).
 
-![left_vs_null_neurips.png](./md_images/l_corner_vs_null_lda_neurips.png)
 
-![right_vs_null_neurips.png](./md_images/r_corner_vs_null_lda_neurips.png)
 
-![left_vs_right_neurips.png](./md_images/l_corner_vs_r_corner_lda_neurips.png)
+Left corners:
+
+
+![left_vs_bsl_neurips.png](./md_images/Leftturnversusbaseline_t.png)
+
+
+Right corners:
+
+![right_vs_bsl_neurips.png](./md_images/Rightturnversusbaseline_t.png)
+
+
 

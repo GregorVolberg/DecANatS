@@ -78,7 +78,7 @@ if isfield(cfg, 'event')
 else
   % do not use FT_READ_EVENT, as that will force the events in a structure
   eventsfile = bids_sidecar(cfg.dataset, 'events');
-  events = ft_read_tsv(eventsfile);
+  events = ft_read_tsv(eventsfile);  
 end
 
 %% modified by Gregor
