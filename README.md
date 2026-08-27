@@ -170,7 +170,7 @@ Left corners:
 
 Right corners:
 
-![right_vs_bsl_neurips.png](./md_images/Rightturnversusbaseline_t.png)
+![right_vs_bsl_neurips.png](./md_images/rightturnversusbaseline_t.png)
 
 
 
