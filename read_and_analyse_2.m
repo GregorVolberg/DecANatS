@@ -192,6 +192,8 @@ for stat_contrast = 1:numel(test)
     exportgraphics(gcf, ['./md_images/', test_text{stat_contrast}, '_vs_', control_text{stat_contrast},fig_suffix, '_t.png'], 'Resolution', 300);
     savefig(gcf, ['./md_images/', test_text{stat_contrast}, '_vs_', control_text{stat_contrast}, fig_suffix, '_t.fig']);
     close(gcf);
-
+allmvr{stat_contrast} = {mvr, mvr2, mvr3};
 end
+st = dbstack;
+save(['allmvr_', st.name, '.mat'], "allmvr");
 end

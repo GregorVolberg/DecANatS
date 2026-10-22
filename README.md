@@ -86,7 +86,7 @@ After cleaning for artifacts, the data was re-referenced using the  reference el
 ### Preprocessing
 
 ### Classification
-The data was decomposed into frequencies from 4 to 30 Hz, in steps of 12 ms, and baseline-corrected using post-event time bins from -3 to 3.6 s. The baseline correction transformed the data from raw power to relative change in power with respect to the baseline.
+The data was decomposed into frequencies from 4 to 30 Hz, in steps of 12 ms, and baseline-corrected using post-event time bins from 3 to 3.6 s. The baseline correction transformed the data from raw power to relative change in power with respect to the baseline.
 The data was then subjected into a binary classifier using electrodes as features, and time and frequency as search dimensions (LDA, 5-fold cross validation). Results are depicted in Figure 9 and Figure 10. Notable time and frequency ranges with high accuracy occurred around 8-10 Hz, -0.5 to 0 s; and between 25 and 30 Hz throughout the pre-stimulus part of the epoch. A topography for the 8-10 Hz frequencies showed that the accuracy was maximal at electrode Cz. The frequency range and topography suggest that this is a mu rhythm which is typically observed during motor action.
 
 ![door_vs_null_tfr.png](./md_images/door_vs_null_tfr.png)
